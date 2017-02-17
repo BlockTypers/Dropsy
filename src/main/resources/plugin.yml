@@ -1,0 +1,7 @@
+name: Dropsy
+version: 1.0.0
+main:  com.blocktyper.dropsy.DropsyPlugin
+author: spaarkimus
+website: blocktyper.com
+database: false
+description: Randomly dropping configured items on block break.

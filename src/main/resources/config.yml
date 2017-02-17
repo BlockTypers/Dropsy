@@ -1,0 +1,84 @@
+debug: false
+log.recipes.enable: false
+data.backup.frequency.sec: -1
+locale: en
+drop-sound: ITEM_CHORUS_FRUIT_TELEPORT 
+allow-rebreak: false
+destroy-on-break: false
+drop-chance-percent: 10
+amount: 1
+blocks: 
+  SAND: 
+    enabled: true
+    allow-rebreak: true
+    destroy-on-break: true
+    drop-chance-percent: 15
+    amount-range: 1~3
+    drops:
+      COAL:
+        enabled: true
+      GOLD_NUGGET: 
+        enabled: true
+        drop-chance-percent: 5
+      GLASS:
+        enabled: true
+        drop-chance-percent: 100
+        required-item: molten-shovel
+  GRAVEL: 
+    enabled: true
+    allow-rebreak: true
+    drop-chance-percent: 2
+    drops:
+      COAL:
+        enabled: true
+      IRON_NUGGET: 
+        enabled: true
+        drop-chance-percent: 1
+  STONE-1: 
+    enabled: true
+    destroy-on-break: true
+    drops:
+      SAND:
+        enabled: true
+      DIAMOND: 
+        enabled: true
+        drop-chance-percent: 1
+        amount-chance-percent: 
+          - 1(90)
+          - 2(8)
+          - 3(2)
+  DIAMOND_ORE: 
+    enabled: false
+    drops:
+      EMERALD:
+        enabled: true
+        drop-chance-percent: 1
+        
+        
+recipes: 
+  - molten-shovel
+
+  
+#Molten Shovel
+recipe.molten-shovel.name: Molten Shovel
+recipe.molten-shovel.de.name: Geschmolzene Schaufel
+recipe.molten-shovel.es.name: Pala fundida
+recipe.molten-shovel.fr.name: Pelle en fusion
+recipe.molten-shovel.locales: 
+  - de
+  - es
+  - fr
+recipe.molten-shovel.rows: 
+  - CBC
+  - OSO
+  - LSL
+recipe.molten-shovel.mats: 
+  - S=DIAMOND_SPADE
+  - L=LAVA_BUCKET
+  - O=OBSIDIAN
+  - B=BLAZE_ROD
+  - C=COAL_BLOCK
+recipe.molten-shovel.output: DIAMOND_SPADE
+recipe.molten-shovel.op.only: false
+
+  
