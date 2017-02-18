@@ -1,3 +1,4 @@
+dont-load-example: false
 debug: false
 log.recipes.enable: false
 data.backup.frequency.sec: -1
@@ -7,23 +8,53 @@ allow-rebreak: false
 destroy-on-break: false
 drop-chance-percent: 10
 amount: 1
+exp: 0
 blocks: 
   SAND: 
     enabled: true
     allow-rebreak: true
     destroy-on-break: true
-    drop-chance-percent: 15
     amount-range: 1~3
+    exp: 1
+    drops-distribution:
+      - NOTHING(90)
+      - COAL(5)
+      - GOLD_NUGGET(1)
+      - STAINED_GLASS(1)
+      - GOLD_NUGGET,COAL(1)
+      - GOLD_NUGGET,COAL,STAINED_GLASS(1)
+      - GOLD_NUGGET,STAINED_GLASS(1)
     drops:
-      COAL:
+      COAL: 
         enabled: true
       GOLD_NUGGET: 
         enabled: true
-        drop-chance-percent: 5
-      GLASS:
+        exp-range: 1~5
+      STAINED_GLASS: 
         enabled: true
-        drop-chance-percent: 100
+        amount: 1
         required-item: molten-shovel
+        exp-distribution: 
+          - 1(50)
+          - 2(48)
+          - 10(2)
+        material-data-distribution: 
+          - 0(5)
+          - 1(5)
+          - 2(5)
+          - 3(5)
+          - 4(5)
+          - 5(5)
+          - 6(5)
+          - 7(5)
+          - 8(5)
+          - 9(5)
+          - 10(5)
+          - 11(5)
+          - 12(5)
+          - 13(5)
+          - 14(25)
+          - 15(5)
   GRAVEL: 
     enabled: true
     allow-rebreak: true
@@ -43,7 +74,7 @@ blocks:
       DIAMOND: 
         enabled: true
         drop-chance-percent: 1
-        amount-chance-percent: 
+        amount-distribution: 
           - 1(90)
           - 2(8)
           - 3(2)
@@ -53,10 +84,45 @@ blocks:
       EMERALD:
         enabled: true
         drop-chance-percent: 1
+  DIRT: 
+    enabled: true
+    allow-rebreak: false
+    destroy-on-break: true
+    drop-chance-percent: 1
+    amount: 1
+    exp: 0
+    drops:
+      POTATO_ITEM: 
+        enabled: true
+        lowest-y: 62
+        amount-range: 1~3
+        required-item: archaeologist-shovel
+      BONE: 
+        enabled: true
+        drop-chance-percent: 3
+        lowest-y: 50
+        required-item: archaeologist-shovel
+      TOTEM: 
+        enabled: true
+        drop-chance-percent: .5
+        exp-range: 1~5
+        highest-y: 20
+        required-item: archaeologist-shovel
+      SKULL_ITEM: 
+        enabled: true
+        drop-chance-percent: 1
+        required-item: archaeologist-shovel
+        highest-y: 30
+        lowest-y: 15
+      ARROW: 
+        enabled: true
+        amount-range: 1~3
+        required-item: archaeologist-shovel
         
         
 recipes: 
   - molten-shovel
+  - archaeologist-shovel
 
   
 #Molten Shovel
@@ -80,5 +146,28 @@ recipe.molten-shovel.mats:
   - C=COAL_BLOCK
 recipe.molten-shovel.output: DIAMOND_SPADE
 recipe.molten-shovel.op.only: false
+
+#Archaeologist Shovel
+recipe.archaeologist-shovel.name: Archaeologist Shovel
+recipe.archaeologist-shovel.de.name: Archäologe Schaufel
+recipe.archaeologist-shovel.es.name: Arqueólogo Pala
+recipe.archaeologist-shovel.fr.name: Pelle Archéologue
+recipe.archaeologist-shovel.locales: 
+  - de
+  - es
+  - fr
+recipe.archaeologist-shovel.rows: 
+  - CSC
+  - MSM
+  - BTB
+recipe.archaeologist-shovel.mats: 
+  - S=DIAMOND_SPADE
+  - C=COMPASS
+  - M=EMPTY_MAP 
+  - B=BONE
+  - T=TOTEM
+  - S=SKULL_ITEM
+recipe.archaeologist-shovel.output: DIAMOND_SPADE
+recipe.archaeologist-shovel.op.only: false
 
   
