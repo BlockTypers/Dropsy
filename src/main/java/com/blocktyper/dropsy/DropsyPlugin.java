@@ -41,6 +41,7 @@ public class DropsyPlugin extends BlockTyperBasePlugin implements RandomIntGener
 		super.onEnable();
 
 		registerListener(new DropsyListener(this));
+		registerCommand("dropsy", new DropsyCommand(this));
 
 		loadAllSettings();
 	}
