@@ -9,7 +9,113 @@ destroy-on-break: false
 drop-chance-percent: 10
 amount: 1
 exp: 0
-blocks: 
+
+spell-chance-percent: 1
+spell-destroy-on-break: false
+spell-allow-rebreak: false
+spell-power: 1
+
+regions:
+  default: 
+    name: The Great Unknown
+  default2: 
+    name: A Nightmare
+    worlds: 
+      - the nether
+      - the end
+  first: 
+    name: Zone 1
+    priority: 1
+    worlds:
+      - world
+    bounds: 
+      highest-x: 10
+      highest-z: 10
+      lowest-x: -10
+      lowest-z: -10
+    ignore-default-blocks: true
+    ignore-default-mobs: true
+  second:
+    name: Zone 2
+    priority: 2
+    bounds: 
+      highest-x: 200
+      highest-z: 200
+      lowest-x: -200
+      lowest-z: -200
+
+
+first-blocks: 
+  SAND: 
+    enabled: true
+    allow-rebreak: true
+    destroy-on-break: true
+    amount-range: 1~3
+    exp: 1
+    drops-distribution:
+      - NOTHING(95)
+      - GOLD_NUGGET(5)
+    drops: 
+      GOLD_NUGGET: 
+        enabled: true
+        exp-range: 1~5
+  SAND_2: 
+    enabled: true
+    allow-rebreak: true
+    destroy-on-break: true
+    amount-range: 1~3
+    exp: 1
+    drops-distribution:
+      - NOTHING(80)
+      - COAL(5)
+      - fossil-flame(14)
+      - molten-shovel(1)
+    drops:
+      COAL: 
+        enabled: true
+        name: Normal Boring Coal
+      molten-shovel: 
+        recipe: molten-shovel
+        enabled: true
+      fossil-flame: 
+        material: COAL
+        enabled: true
+        name: Fossil Flame
+        lore:
+          - a lump of coal so perfectly dark that it started to glow
+          - you get a strange feeling whenever you look directly at it
+        enchantments:
+          KNOCKBACK:
+            power: 2
+            
+second-blocks: 
+  SAND: 
+    enabled: true
+    allow-rebreak: true
+    destroy-on-break: true
+    amount-range: 1~3
+    exp: 1
+    drops-distribution:
+      - NOTHING(80)
+      - EMERALD(5)
+    drops: 
+      EMERALD:
+         
+        enabled: true
+        exp-range: 1~5
+      
+default2-blocks: 
+  ALL_BLOCKS: 
+    enabled: true
+    exp: 1
+    drops-distribution:
+      - NOTHING(80)
+      - STICK(5)
+    drops:
+      STICK: 
+        enabled: true
+        
+default-blocks: 
   SAND: 
     enabled: true
     allow-rebreak: true
@@ -89,6 +195,27 @@ blocks:
     allow-rebreak: false
     destroy-on-break: true
     drop-chance-percent: 1
+    spell-chance-percent: 1
+    spell-allow-rebreak: true
+    spell-destroy-on-break: false
+    spells:
+      invigorating-work:
+        command-sequence: haste
+        spell-chance-percent: 5
+        source:
+          en: Invigorating Work
+          de: Belebende Arbeit
+        variables: 
+          LEVEL: 2
+          SECONDS: 30
+      dirty-job:
+        command-sequence: fatigue
+        source:
+          en: Dirty Job
+          de: Dreckige Arbeit
+        variables: 
+          LEVEL: 2
+          SECONDS: 15
     amount: 1
     exp: 0
     drops:
@@ -97,6 +224,27 @@ blocks:
         lowest-y: 62
         amount-range: 1~3
         required-item: archaeologist-shovel
+        spells-distribution:
+          - nothing(20)
+          - reward1(40)
+          - reward2(40)
+        spells:
+          reward1:
+            variables: 
+              AMOUNT: 2
+            messages:
+              en:
+                - You got &AMOUNT compass(s).
+              de: 
+                - Du hast &AMOUNT Kompass(e) bekomment.
+            command: give &PLAYER COMPASS &AMOUNT
+          reward2:
+            command: give &PLAYER MAP
+            messages:
+              en: 
+                - You got a map.
+              de: 
+                - Du hast eine Landkarte bekomment.
       BONE: 
         enabled: true
         drop-chance-percent: 3
@@ -120,9 +268,120 @@ blocks:
         required-item: archaeologist-shovel
         
         
+        
+mobs-kill: 
+  ALL_MOBS:
+    enabled: true
+    amount: 1
+    exp: 0
+    spell-chance-percent: 1
+    spells:
+      get-pumped:
+        command-sequence: haste
+        spell-chance-percent: 5
+        source:
+          en: Get pumped
+          en: Pumpe es auf
+        variables: 
+          LEVEL: 1
+          SECONDS: 10
+
+  SKELETON: 
+    enabled: true
+    amount-range: 1~3
+    exp: 1
+    spell-chance-percent: 1
+    on-damage-spell-chance-percent: 2
+    spells:
+      invigorating-work:
+        command-sequence: haste
+        spell-chance-percent: 5
+        required-item: head-hunter
+        source:
+          en: Invigorating Battle
+          de: Belebend Kampf
+        variables: 
+          LEVEL: 3
+          SECONDS: 15
+      dirty-job:
+        command-sequence: fatigue
+        source:
+          en: Dirty Fight
+          de: Dreckige Kampf
+        variables: 
+          LEVEL: 2
+          SECONDS: 5
+    drops-distribution:
+      - COAL, SKULL_ITEM(80)
+      - COAL(20)
+    drops:
+      COAL: 
+        enabled: true
+      SKULL_ITEM: 
+        enabled: true
+        exp-range: 1~5
+        required-item: head-hunter
+        
+        
+first-mobs-damage: 
+  SKELETON: 
+    enabled: true
+    amount-range: 1~3
+    exp: 1
+    spell-chance-percent: 1
+    spells:
+      damage:
+        command-sequence: damage
+        source:
+          en: Death's Breath
+          en: Der Atmen des Tods
+        variables: 
+          LEVEL: 2
+          SECONDS: 4
+          TARGET: &PLAYER
+    drops-distribution:
+      - NOTHING(50)
+      - BONE(50)
+    drops:
+      BONE: 
+        enabled: true
+        required-item: head-hunter
+        
+        
 recipes: 
   - molten-shovel
   - archaeologist-shovel
+  - head-hunter
+  
+command-sequences:
+  damage-player: 
+    commands:
+      - effect 10 &TARGET &LEVEL &SECONDS
+  damage: 
+    commands:
+      - effect 10 &TARGET &LEVEL &SECONDS
+    messages:
+      en:
+        - §4&SOURCE -> Damaged (&LEVEL) - &SECONDS sec
+      de: 
+        - §4&SOURCE -> Beschädigt (&LEVEL) - &SECONDS sec
+  haste:
+    commands:
+      - effect 3 &PLAYER &LEVEL &SECONDS
+    messages:
+      en:
+        - §2&SOURCE -> Haste (&LEVEL) - &SECONDS sec
+      de: 
+        - §2&SOURCE -> Eile (&LEVEL) - &SECONDS sec
+  fatigue:
+    commands:
+      - effect 4 &PLAYER LEVEL &SECONDS
+    messages:
+      en:
+        - §e&SOURCE -> Fatigue (&LEVEL) -  &SECONDS sec
+      de: 
+        - §e&SOURCE -> Müdigkeit (&LEVEL) -  &SECONDS sec
+      
 
   
 #Molten Shovel
@@ -170,5 +429,21 @@ recipe.archaeologist-shovel.mats:
   - K=SKULL_ITEM
 recipe.archaeologist-shovel.output: DIAMOND_SPADE
 recipe.archaeologist-shovel.op.only: false
+
+#Head Hunter
+recipe.head-hunter.name: Head Hunter
+recipe.head-hunter.de.name: Kopfjäger
+recipe.head-hunter.locales: 
+  - de
+recipe.head-hunter.rows: 
+  - FSF
+  - FAF
+  - FFF
+recipe.head-hunter.mats: 
+  - A=DIAMOND_AXE
+  - F=FLINT
+  - S=SKULL_ITEM
+recipe.head-hunter.output: DIAMOND_AXE
+recipe.head-hunter.op.only: false
 
   

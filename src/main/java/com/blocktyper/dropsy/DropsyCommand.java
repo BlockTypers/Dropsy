@@ -7,12 +7,14 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import com.blocktyper.v1_2_3.BlockTyperCommand;
-import com.blocktyper.v1_2_3.IBlockTyperPlugin;
 
 public class DropsyCommand extends BlockTyperCommand {
 
-	public DropsyCommand(IBlockTyperPlugin plugin) {
-		init(plugin);
+	DropsyPlugin dropsyPlugin;
+
+	public DropsyCommand(DropsyPlugin dropsyPlugin) {
+		init(dropsyPlugin);
+		this.dropsyPlugin = dropsyPlugin;
 	}
 
 	private static String RELOAD = "reload";
@@ -28,6 +30,7 @@ public class DropsyCommand extends BlockTyperCommand {
 
 		if (args[0].equals(RELOAD)) {
 			plugin.reloadConfig();
+			dropsyPlugin.loadAllSettings();
 		}
 
 		return true;

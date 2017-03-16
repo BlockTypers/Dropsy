@@ -25,6 +25,10 @@ public class DropsyPlugin extends BlockTyperBasePlugin implements RandomIntGener
 	private boolean allowRebreak = false;
 	private boolean destroyOnBreak = false;
 
+	private double spellChance = 0;
+	private boolean spellAllowRebreak = false;
+	private boolean spellDestroyOnBreak = false;
+
 	private Integer amount = null;
 	private String amountRange = null;
 	private List<String> amountDistribution = null;
@@ -40,7 +44,7 @@ public class DropsyPlugin extends BlockTyperBasePlugin implements RandomIntGener
 	public void onEnable() {
 		super.onEnable();
 
-		registerListener(new DropsyListener(this));
+		registerListener(new DropsyBlockListener(this));
 		registerCommand("dropsy", new DropsyCommand(this));
 
 		loadAllSettings();
@@ -67,6 +71,18 @@ public class DropsyPlugin extends BlockTyperBasePlugin implements RandomIntGener
 		return destroyOnBreak;
 	}
 
+	public double getSpellChance() {
+		return spellChance;
+	}
+
+	public boolean isSpellAllowRebreak() {
+		return spellAllowRebreak;
+	}
+
+	public boolean isSpellDestroyOnBreak() {
+		return spellDestroyOnBreak;
+	}
+
 	public Sound getDropSound() {
 		return dropSound;
 	}
@@ -90,7 +106,8 @@ public class DropsyPlugin extends BlockTyperBasePlugin implements RandomIntGener
 	// endregion
 
 	// region PRIVATE HELPERS
-	private void loadAllSettings() {
+	void loadAllSettings() {
+		DropsyListenerBase.intGenerators = new HashMap<String, RandomIntGenerator>();
 		dropChance = getConfig().getDouble(Config.DROP_CHANCE, 0.0);
 		allowRebreak = getConfig().getBoolean(Config.ALLOW_REBREAK, false);
 		destroyOnBreak = getConfig().getBoolean(Config.DESTROY_ON_BREAK, false);
@@ -105,6 +122,8 @@ public class DropsyPlugin extends BlockTyperBasePlugin implements RandomIntGener
 				dropSound = Sound.valueOf(dropSoundString);
 			}
 		}
+
+		loadSpellPowerSettings();
 	}
 
 	private void loadAmountSettings() {
@@ -119,6 +138,12 @@ public class DropsyPlugin extends BlockTyperBasePlugin implements RandomIntGener
 		if (getConfig().contains(Config.AMOUNT_DISTRIBUTION, true)) {
 			amountDistribution = getConfig().getStringList(Config.AMOUNT_DISTRIBUTION);
 		}
+	}
+
+	private void loadSpellPowerSettings() {
+		spellChance = getConfig().getDouble(Config.SPELL_CHANCE, 0.0);
+		spellAllowRebreak = getConfig().getBoolean(Config.SPELL_ALLOW_REBREAK, false);
+		spellDestroyOnBreak = getConfig().getBoolean(Config.SPELL_DESTROY_ON_BREAK, false);
 	}
 
 	private void loadExperienceSettings() {
