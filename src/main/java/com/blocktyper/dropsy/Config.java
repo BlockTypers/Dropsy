@@ -42,6 +42,8 @@ public class Config {
 	public static final String EXP_RANGE = "exp-range";
 	public static final String EXP_DISTRIBUTION = "exp-distribution";
 	
+	public static final String RECIPE = "recipe";
+	public static final String MATERIAL = "material";
 	public static final String MATERIAL_DATA = "material-data";
 	public static final String MATERIAL_DATA_RANGE = "material-data-range";
 	public static final String MATERIAL_DATA_DISTRIBUTION = "material-data-distribution";

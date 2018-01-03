@@ -10,10 +10,12 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.MetadataValue;
 
 import com.blocktyper.v1_2_3.BlockTyperListener;
@@ -176,27 +178,118 @@ public class DropsyListenerBase extends BlockTyperListener {
 
 		Key dropRoot = new Key(dropsRoot.end(dropKey));
 
-		String dropMaterialName = dropKey;
-		Byte dropMaterialData = null;
-		if (dropMaterialName.contains("-")) {
-			dropMaterialData = Byte.parseByte(dropMaterialName.substring(dropMaterialName.indexOf("-") + 1));
-			dropMaterialName = dropMaterialName.substring(0, dropMaterialName.indexOf("-"));
+		if(!shouldItemBeDropped(dropRoot, location, player, forceDrop, materialDropChance)){
+			return false;
 		}
-
-		Integer calculatedDropData = getCalculatedInt(dropRoot, Config.MATERIAL_DATA, Config.MATERIAL_DATA_RANGE,
-				Config.MATERIAL_DATA_DISTRIBUTION, null, dropMaterialData != null ? dropMaterialData.intValue() : 0);
-
-		if (calculatedDropData != null && calculatedDropData > 0) {
-			dropMaterialData = calculatedDropData.byteValue();
+		
+		String dropMaterialName = null;
+		
+		boolean isCustomDrop = dropKey.startsWith("_");
+		
+		if(isCustomDrop){
+			if(getConfig().contains(dropRoot.end(Config.MATERIAL))){
+				dropMaterialName = getConfig().getString(dropRoot.end(Config.MATERIAL));
+			}
+		}else{
+			dropMaterialName = dropKey;
 		}
+		
+		ItemStack dropItem = null;
+		
+		if(dropMaterialName != null){
+			Byte dropMaterialData = null;
+			if (dropMaterialName.contains("-")) {
+				dropMaterialData = Byte.parseByte(dropMaterialName.substring(dropMaterialName.indexOf("-") + 1));
+				dropMaterialName = dropMaterialName.substring(0, dropMaterialName.indexOf("-"));
+			}
 
-		Material dropMaterial = Material.matchMaterial(dropMaterialName);
-		ItemStack dropItem = new ItemStack(dropMaterial);
+			Integer calculatedDropData = getCalculatedInt(dropRoot, Config.MATERIAL_DATA, Config.MATERIAL_DATA_RANGE,
+					Config.MATERIAL_DATA_DISTRIBUTION, null, dropMaterialData != null ? dropMaterialData.intValue() : 0);
 
-		if (dropMaterialData != null) {
-			dropItem = new ItemStack(dropMaterial, 1, dropItem.getDurability(), dropMaterialData);
+			if (calculatedDropData != null && calculatedDropData > 0) {
+				dropMaterialData = calculatedDropData.byteValue();
+			}
+
+			Material dropMaterial = Material.matchMaterial(dropMaterialName);
+			
+			dropItem = new ItemStack(dropMaterial);
+
+			if (dropMaterialData != null) {
+				dropItem = new ItemStack(dropMaterial, 1, dropItem.getDurability(), dropMaterialData);
+			}
+		}else{
+			if(!getConfig().contains(dropRoot.end(Config.RECIPE))){
+				warning("  - no recipe for custom drop: " + dropKey);
+				return false;
+			}
+			
+			String recipeKey = getConfig().getString(dropRoot.end(Config.RECIPE));
+			
+			dropItem = recipeRegistrar().getItemFromRecipe(recipeKey, player, null, 1);
 		}
+		
+		if(dropItem == null){
+			warning("  item for drop could not be determined: " + dropKey);
+			return false;
+		}
+		
+		if(getConfig().contains(dropRoot.end("name"))){
+			String customName = getConfig().getString(dropRoot.end("name"));
+			ItemMeta itemMeta = dropItem.getItemMeta();
+			if(itemMeta != null){
+				itemMeta.setDisplayName(customName);
+				dropItem.setItemMeta(itemMeta);
+			}
+		}
+		
+		if(getConfig().contains(dropRoot.end("lore"))){
+			List<String> lore = getConfig().getStringList(dropRoot.end("lore"));
+			ItemMeta itemMeta = dropItem.getItemMeta();
+			if(itemMeta != null){
+				itemMeta.setLore(lore);
+				dropItem.setItemMeta(itemMeta);
+			}
+		}
+		
+		if(getConfig().contains(dropRoot.end("enchantments"))){
+			ConfigurationSection enchantments = getConfig().getConfigurationSection(dropRoot.end("enchantments"));
+			if(enchantments != null && enchantments.getKeys(false) != null){
+				for(String enchantmentName : enchantments.getKeys(false)){
+					Enchantment enchantment = Enchantment.getByName(enchantmentName);
+					
+					if(enchantment == null){
+						warning("Enchantment not recognized: " + enchantment);
+						continue;
+					}
+					int level = 1;
+					if(getConfig().contains(dropRoot.__("enchantments").__(enchantmentName).end("level"))){
+						level = getConfig().getInt(dropRoot.__("enchantments").__(enchantmentName).end("level"));
+					}
+					dropItem.addUnsafeEnchantment(enchantment, level);
+				}
+					
+			}
+		}
+		
+		
+		// EXP
+		int calculatedDropExp = getCalculatedInt(dropRoot, Config.EXP, Config.EXP_RANGE, Config.EXP_DISTRIBUTION,
+				randomMaterialExpGenerator, 0);
+		dropExp(calculatedDropExp, location);
 
+		// AMOUNT
+		int calculatedDropAmount = getCalculatedInt(dropRoot, Config.AMOUNT, Config.AMOUNT_RANGE,
+				Config.AMOUNT_DISTRIBUTION, randomMaterialAmountGenerator, 0);
+
+		dropItem(dropItem, calculatedDropAmount, location);
+
+		return true;
+	}
+	
+	
+	
+	
+	private boolean shouldItemBeDropped(Key dropRoot, Location location, Player player, boolean forceDrop, double materialDropChance){
 		if (!getConfig().getBoolean(dropRoot.end(Config.ENABLED), false)) {
 			debugInfo("  - not enabled");
 			return false;
@@ -240,20 +333,10 @@ public class DropsyListenerBase extends BlockTyperListener {
 		} else {
 			debugInfo("  - DROPS DISTRIBUTION LUCK");
 		}
-
-		// EXP
-		int calculatedDropExp = getCalculatedInt(dropRoot, Config.EXP, Config.EXP_RANGE, Config.EXP_DISTRIBUTION,
-				randomMaterialExpGenerator, 0);
-		dropExp(calculatedDropExp, location);
-
-		// AMOUNT
-		int calculatedDropAmount = getCalculatedInt(dropRoot, Config.AMOUNT, Config.AMOUNT_RANGE,
-				Config.AMOUNT_DISTRIBUTION, randomMaterialAmountGenerator, 0);
-
-		dropItem(dropItem, calculatedDropAmount, location);
-
+		
 		return true;
 	}
+	
 	
 	
 	protected boolean attemptSpell(Location location, Key spellsRoot, String spellKey, 
