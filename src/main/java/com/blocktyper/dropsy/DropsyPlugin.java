@@ -10,8 +10,8 @@ import java.util.ResourceBundle;
 
 import org.bukkit.Sound;
 
-import com.blocktyper.v1_2_3.BlockTyperBasePlugin;
-import com.blocktyper.v1_2_3.recipes.IRecipe;
+import com.blocktyper.v1_2_6.BlockTyperBasePlugin;
+import com.blocktyper.v1_2_6.recipes.IRecipe;
 
 public class DropsyPlugin extends BlockTyperBasePlugin implements RandomIntGenerator {
 
@@ -45,6 +45,7 @@ public class DropsyPlugin extends BlockTyperBasePlugin implements RandomIntGener
 		super.onEnable();
 
 		registerListener(new DropsyBlockListener(this));
+		registerListener(new DropsyMobDamageListener(this));
 		registerCommand("dropsy", new DropsyCommand(this));
 
 		loadAllSettings();

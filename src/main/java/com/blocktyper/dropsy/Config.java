@@ -44,6 +44,11 @@ public class Config {
 	
 	public static final String RECIPE = "recipe";
 	public static final String MATERIAL = "material";
+	public static final String NAME = "name";
+	public static final String LORE = "lore";
+	public static final String ENCHANTMENTS = "enchantments";
+	public static final String LEVEL = "level";
+
 	public static final String MATERIAL_DATA = "material-data";
 	public static final String MATERIAL_DATA_RANGE = "material-data-range";
 	public static final String MATERIAL_DATA_DISTRIBUTION = "material-data-distribution";
@@ -61,7 +66,7 @@ public class Config {
 	public static final String COMMAND_SEQUENCE = "command-sequence";
 	public static final String COMMAND_SEQUENCES = "command-sequences";
 	public static final String COMMAND = "command";
-	public static final String COMMANDS = "command";
+	public static final String COMMANDS = "commands";
 	public static final String VARIABLES = "variables";
 	public static final String SOURCE = "source";
 	public static final String MESSAGES = "messages";

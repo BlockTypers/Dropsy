@@ -6,7 +6,7 @@ import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import com.blocktyper.v1_2_3.BlockTyperCommand;
+import com.blocktyper.v1_2_6.BlockTyperCommand;
 
 public class DropsyCommand extends BlockTyperCommand {
 

@@ -15,273 +15,284 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
-import com.blocktyper.v1_2_3.helpers.Key;
+import com.blocktyper.v1_2_6.helpers.Key;
 
 public class DropsyMobDamageListener extends DropsyListenerBase {
-	
-	public static int SPELL_TRIGGER_TYPE_ATTACK = 1;
-	public static int SPELL_TRIGGER_TYPE_KILL = 2;
-	public static int SPELL_TRIGGER_TYPE_ATTACK_DROP = 3;
-	public static int SPELL_TRIGGER_TYPE_KILL_DROP = 4;
-	
-	public static Map<Integer, String> SPELL_TRIGGER_LOG_MESSAGES;
-	
-	static{
-		SPELL_TRIGGER_LOG_MESSAGES = new HashMap<Integer, String>();
-		SPELL_TRIGGER_LOG_MESSAGES.put(SPELL_TRIGGER_TYPE_ATTACK, "OnAttack-Spell");
-		SPELL_TRIGGER_LOG_MESSAGES.put(SPELL_TRIGGER_TYPE_KILL, "OnKill-Spell");
-		SPELL_TRIGGER_LOG_MESSAGES.put(SPELL_TRIGGER_TYPE_ATTACK_DROP, "OnAttackDrop-Spell");
-		SPELL_TRIGGER_LOG_MESSAGES.put(SPELL_TRIGGER_TYPE_KILL_DROP, "OnKillDrop-Spell");
-	}
 
-	public DropsyMobDamageListener(DropsyPlugin dropsyPlugin) {
-		super(dropsyPlugin);
-	}
+    public static int SPELL_TRIGGER_TYPE_ATTACK = 1;
+    public static int SPELL_TRIGGER_TYPE_KILL = 2;
+    public static int SPELL_TRIGGER_TYPE_ATTACK_DROP = 3;
+    public static int SPELL_TRIGGER_TYPE_KILL_DROP = 4;
 
-	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-	public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-		if (!(event.getDamager() instanceof Player)) {
-			return;
-		}
+    public static Map<Integer, String> SPELL_TRIGGER_LOG_MESSAGES;
 
-		Player player = null;
-		if (!(event.getDamager() instanceof Player)) {
+    static {
+        SPELL_TRIGGER_LOG_MESSAGES = new HashMap<Integer, String>();
+        SPELL_TRIGGER_LOG_MESSAGES.put(SPELL_TRIGGER_TYPE_ATTACK, "OnAttack-Spell");
+        SPELL_TRIGGER_LOG_MESSAGES.put(SPELL_TRIGGER_TYPE_KILL, "OnKill-Spell");
+        SPELL_TRIGGER_LOG_MESSAGES.put(SPELL_TRIGGER_TYPE_ATTACK_DROP, "OnAttackDrop-Spell");
+        SPELL_TRIGGER_LOG_MESSAGES.put(SPELL_TRIGGER_TYPE_KILL_DROP, "OnKillDrop-Spell");
+    }
 
-			if (event.getDamager() instanceof Projectile) {
-				if (((Projectile) event.getDamager()).getShooter() instanceof Player) {
-					player = (Player) ((Projectile) event.getDamager()).getShooter();
-				}
-			}
+    public DropsyMobDamageListener(DropsyPlugin dropsyPlugin) {
+        super(dropsyPlugin);
+    }
 
-		} else {
-			player = (Player) event.getDamager();
-		}
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player)) {
+            return;
+        }
 
-		if (player == null) {
-			return;
-		}
+        Player player = null;
+        if (!(event.getDamager() instanceof Player)) {
 
-		if (event.getEntity() == null) {
-			return;
-		}
+            if (event.getDamager() instanceof Projectile) {
+                if (((Projectile) event.getDamager()).getShooter() instanceof Player) {
+                    player = (Player) ((Projectile) event.getDamager()).getShooter();
+                }
+            }
 
-		Entity entity = event.getEntity();
+        } else {
+            player = (Player) event.getDamager();
+        }
 
-		RegionsToProcess regionsToProcess = getRegionsToProcess(entity.getWorld().getName(),
-				entity.getLocation().getBlockX(), entity.getLocation().getBlockZ());
+        if (player == null) {
+            return;
+        }
 
-		processAttackAllRegions(player, entity, regionsToProcess, false);
+        if (event.getEntity() == null) {
+            return;
+        }
 
-		if (entity instanceof Damageable) {
-			Damageable damageable = (Damageable) entity;
-			if (event.getFinalDamage() >= damageable.getHealth()) {
-				boolean isKill = true;
-				processAttackAllRegions(player, entity, regionsToProcess, isKill);
-			}
-		}
-	}
+        Entity entity = event.getEntity();
 
-	private void processAttackAllRegions(Player player, Entity entity, RegionsToProcess regionsToProcess, boolean isKill) {
+        RegionsToProcess regionsToProcess = getRegionsToProcess(entity.getWorld().getName(),
+                entity.getLocation().getBlockX(), entity.getLocation().getBlockZ());
 
-		boolean doNotProcessDefaults = false;
+        processAttackAllRegions(player, entity, regionsToProcess, false);
 
-		for (String priorityRegion : regionsToProcess.getPriorityRegions()) {
-			Key regionsRoot = new Key(Config.REGIONS_ROOT).__(priorityRegion);
+        if (entity instanceof Damageable) {
+            Damageable damageable = (Damageable) entity;
+            if (event.getFinalDamage() >= damageable.getHealth()) {
+                boolean isKill = true;
+                processAttackAllRegions(player, entity, regionsToProcess, isKill);
+            }
+        }
+    }
 
-			if (!doNotProcessDefaults && getConfig().contains(regionsRoot.end(Config.IGNORE_DEFAULT_MOBS))) {
-				doNotProcessDefaults = getConfig().getBoolean(regionsRoot.end(Config.IGNORE_DEFAULT_MOBS));
-			}
+    private void processAttackAllRegions(Player player, Entity entity, RegionsToProcess regionsToProcess, boolean isKill) {
 
-			// tail recursion
-			boolean doLoop = true;
-			Integer processVariation = null;
-			Integer lastProcessVariation = null;
-			while (doLoop) {
-				processVariation = processEntityDamageForRegion(priorityRegion, player, entity, processVariation,
-						isKill);
-				doLoop = processVariation != null
-						&& (lastProcessVariation == null || processVariation > lastProcessVariation);
-				lastProcessVariation = processVariation;
-			}
-		}
+        boolean doNotProcessDefaults = false;
 
-		if (!doNotProcessDefaults) {
-			for (String defaultRegion : regionsToProcess.getDefaultRegions()) {
-				// tail recursion
-				boolean doLoop = true;
-				Integer processVariation = null;
-				Integer lastProcessVariation = null;
-				while (doLoop) {
-					processVariation = processEntityDamageForRegion(defaultRegion, player, entity, processVariation,
-							isKill);
-					doLoop = processVariation != null
-							&& (lastProcessVariation == null || processVariation > lastProcessVariation);
-					lastProcessVariation = processVariation;
-				}
-			}
-		}
-	}
+        for (String priorityRegion : regionsToProcess.getPriorityRegions()) {
+            Key regionsRoot = new Key(Config.REGIONS_ROOT).__(priorityRegion);
 
-	protected Integer processEntityDamageForRegion(String regionName, Player player, Entity entity, Integer variation,
-			boolean isKill) {
-		debugInfo("#########################################");
-		debugInfo("#########################################");
-		debugInfo("REGION: " + regionName);
+            if (!doNotProcessDefaults && getConfig().contains(regionsRoot.end(Config.IGNORE_DEFAULT_MOBS))) {
+                doNotProcessDefaults = getConfig().getBoolean(regionsRoot.end(Config.IGNORE_DEFAULT_MOBS));
+            }
 
-		String originalEntityName = entity.getName();
-		String entityName = originalEntityName;
-		
-		String logType = "[" + (isKill ? "kill" : "attack")+"-entityName]: ";
-		
+            // tail recursion
+            boolean doLoop = true;
+            Integer processVariation = null;
+            Integer lastProcessVariation = null;
+            while (doLoop) {
+                processVariation = processEntityDamageForRegion(priorityRegion, player, entity, processVariation,
+                        isKill);
+                doLoop = processVariation != null
+                        && (lastProcessVariation == null || processVariation > lastProcessVariation);
+                lastProcessVariation = processVariation;
+            }
+        }
 
-		debugInfo(logType + entityName);
-		if (variation != null) {
-			entityName = getVariationKey(entityName, variation);
-			debugInfo("  - variation: " + entityName);
-			variation++;
-		} else {
-			variation = 1;
-		}
+        if (!doNotProcessDefaults) {
+            for (String defaultRegion : regionsToProcess.getDefaultRegions()) {
+                // tail recursion
+                boolean doLoop = true;
+                Integer processVariation = null;
+                Integer lastProcessVariation = null;
+                while (doLoop) {
+                    processVariation = processEntityDamageForRegion(defaultRegion, player, entity, processVariation,
+                            isKill);
+                    doLoop = processVariation != null
+                            && (lastProcessVariation == null || processVariation > lastProcessVariation);
+                    lastProcessVariation = processVariation;
+                }
+            }
+        }
+    }
 
-		String mobsRootType = isKill ? Config.MOBS_KILL_ROOT : Config.MOBS_DAMAGE_ROOT;
+    protected Integer processEntityDamageForRegion(String regionName, Player player, Entity entity, Integer variation,
+                                                   boolean isKill) {
+        debugInfo("#########################################");
+        debugInfo("#########################################");
+        debugInfo("REGION: " + regionName);
 
-		Key materialRoot = new Key(regionName + "-" + mobsRootType).__(entityName);
+        String originalEntityType = entity.getType().name();
+        String entityType = originalEntityType;
 
-		if (!keyIsEnabled(materialRoot)) {
-			debugInfo("  - material not enabled");
+        String logType = "[" + (isKill ? "kill" : "attack") + "-entityType]: ";
 
-			Key nextMaterialKey = new Key(regionName + "-" + mobsRootType)
-					.__(getVariationKey(originalEntityName, variation));
-			if (keyExists(nextMaterialKey)) {
-				return variation;
-			}
 
-			return null;
-		}
+        debugInfo(logType + entityType);
+        if (variation != null) {
+            entityType = getVariationKey(entityType, variation);
+            debugInfo("  - variation: " + entityType);
+            variation++;
+        } else {
+            variation = 1;
+        }
 
-		processSpellsSection(player, entity.getLocation(), materialRoot, isKill ? SPELL_TRIGGER_TYPE_KILL : SPELL_TRIGGER_TYPE_ATTACK);
+        String actionType = isKill ? Config.MOBS_KILL_ROOT : Config.MOBS_DAMAGE_ROOT;
 
-		processDropsForEntity(player, entity.getLocation(), materialRoot, isKill);
+        Key mobTypeRoot = new Key(regionName + "-" + actionType).__(entityType);
 
-		return variation;
-	}
+        if (!keyIsEnabled(mobTypeRoot)) {
+            debugInfo("  - mobType not enabled");
+            return calculateNextPossibleVariation(regionName, actionType, originalEntityType, variation);
+        } else if (getConfig().contains(mobTypeRoot.end((Config.NAME)))) {
+            String requiredEntityName = getConfig().getString(mobTypeRoot.end(Config.NAME));
+            String entityName = entity.getName() != null ? entity.getName() : "";
 
-	private void processSpellsSection(Player player, Location location, Key parentRoot, int triggerTypeId) {
-		double entitySpellChance = getConfig().getDouble(parentRoot.end(Config.SPELL_CHANCE),
-				dropsyPlugin.getSpellChance());
+            if (!entityName.equals(requiredEntityName)) {
+                debugInfo("  - not the right mob name (" + entityName + "). Required: " + requiredEntityName + " - " + mobTypeRoot.end(Config.NAME));
+                return calculateNextPossibleVariation(regionName, actionType, originalEntityType, variation);
+            }
+        }
 
-		List<String> spellsFromRandomDistribution = null;
-		
-		String spellTriggerType = SPELL_TRIGGER_LOG_MESSAGES.containsKey(triggerTypeId) ? SPELL_TRIGGER_LOG_MESSAGES.get(triggerTypeId) : null;
-		
-		if(spellTriggerType == null){
-			warning("Unrecognized Spell Trigger Type: " + triggerTypeId);
-			spellTriggerType = "["+triggerTypeId+"]: ";
-		}else{
-			spellTriggerType = "["+spellTriggerType+"]: ";
-		}
+        processSpellsSection(player, entity.getLocation(), mobTypeRoot, isKill ? SPELL_TRIGGER_TYPE_KILL : SPELL_TRIGGER_TYPE_ATTACK);
 
-		if (getConfig().contains(parentRoot.end(Config.SPELLS_DISTRIBUTION), true)) {
-			List<String> spellsDistribution = getConfig().getStringList(parentRoot.end(Config.SPELLS_DISTRIBUTION));
-			spellsFromRandomDistribution = DropsyPlugin.getRandomCsvStringListFromDistribution(spellsDistribution);
+        processDropsForEntity(player, entity.getLocation(), mobTypeRoot, isKill);
 
-			if (spellsFromRandomDistribution == null || spellsFromRandomDistribution.isEmpty()) {
-				warning(spellTriggerType + parentRoot.getVal()
-						+ " - Unexpected issue getting the random drops distribution list!");
-			} else {
-				debugInfo("  - Random drops distributution: " + spellsFromRandomDistribution);
-			}
-		}
+        return variation;
+    }
 
-		Key spellsRoot = new Key(parentRoot.end(Config.SPELLS_ROOT));
+    private Integer calculateNextPossibleVariation(String regionName, String actionType, String originalEntityType, Integer variation) {
+        Key nextMaterialKey = new Key(regionName + "-" + actionType)
+                .__(getVariationKey(originalEntityType, variation));
+        if (keyExists(nextMaterialKey)) {
+            return variation;
+        }
 
-		ConfigurationSection spellsConfigurationSection = getConfig().getConfigurationSection(spellsRoot.getVal());
-		if (spellsConfigurationSection == null) {
-			debugInfo(spellTriggerType + parentRoot.getVal() + " - SPELLS SECTION NOT DEFINED");
-			return;
-		}
+        return null;
+    }
 
-		Set<String> spells = spellsConfigurationSection.getKeys(false);
+    private void processSpellsSection(Player player, Location location, Key parentRoot, int triggerTypeId) {
+        double entitySpellChance = getConfig().getDouble(parentRoot.end(Config.SPELL_CHANCE),
+                dropsyPlugin.getSpellChance());
 
-		if (spells == null || spells.isEmpty()) {
-			debugInfo(spellTriggerType + parentRoot.getVal() + " - NO SPELLS DEFINED");
-			return;
-		}
+        List<String> spellsFromRandomDistribution = null;
 
-		boolean somethingWasCast = false;
+        String spellTriggerType = SPELL_TRIGGER_LOG_MESSAGES.containsKey(triggerTypeId) ? SPELL_TRIGGER_LOG_MESSAGES.get(triggerTypeId) : null;
 
-		for (String spellKey : spells) {
+        if (spellTriggerType == null) {
+            warning("Unrecognized Spell Trigger Type: " + triggerTypeId);
+            spellTriggerType = "[" + triggerTypeId + "]: ";
+        } else {
+            spellTriggerType = "[" + spellTriggerType + "]: ";
+        }
 
-			boolean somethingWasCastTemp = spell(location, spellsRoot, spellKey, parentRoot,
-					spellsFromRandomDistribution, player, entitySpellChance, null);
-			if (somethingWasCastTemp && !somethingWasCast) {
-				somethingWasCast = true;
-			}
-		}
+        if (getConfig().contains(parentRoot.end(Config.SPELLS_DISTRIBUTION), true)) {
+            List<String> spellsDistribution = getConfig().getStringList(parentRoot.end(Config.SPELLS_DISTRIBUTION));
+            spellsFromRandomDistribution = DropsyPlugin.getRandomCsvStringListFromDistribution(spellsDistribution);
 
-		if (!somethingWasCast) {
-			debugInfo(spellTriggerType + "  - no spell");
-			return;
-		}
-	}
+            if (spellsFromRandomDistribution == null || spellsFromRandomDistribution.isEmpty()) {
+                warning(spellTriggerType + parentRoot.getVal()
+                        + " - Unexpected issue getting the random drops distribution list!");
+            } else {
+                debugInfo("  - Random drops distribution: " + spellsFromRandomDistribution);
+            }
+        }
 
-	private void processDropsForEntity(Player player, Location location, Key entityRoot, boolean isKill) {
-		double materialDropChance = getConfig().getDouble(entityRoot.end(Config.DROP_CHANCE),
-				dropsyPlugin.getDropChance());
+        Key spellsRoot = new Key(parentRoot.end(Config.SPELLS_ROOT));
 
-		List<String> dropsFromRandomDistribution = null;
+        ConfigurationSection spellsConfigurationSection = getConfig().getConfigurationSection(spellsRoot.getVal());
+        if (spellsConfigurationSection == null) {
+            debugInfo(spellTriggerType + parentRoot.getVal() + " - SPELLS SECTION NOT DEFINED");
+            return;
+        }
 
-		if (getConfig().contains(entityRoot.end(Config.DROPS_DISTRIBUTION), true)) {
-			List<String> dropsDistribution = getConfig().getStringList(entityRoot.end(Config.DROPS_DISTRIBUTION));
-			dropsFromRandomDistribution = DropsyPlugin.getRandomCsvStringListFromDistribution(dropsDistribution);
+        Set<String> spells = spellsConfigurationSection.getKeys(false);
 
-			if (dropsFromRandomDistribution == null || dropsFromRandomDistribution.isEmpty()) {
-				warning("damage-entity: " + entityRoot.getVal()
-						+ " - Unexpected issue getting the random drops distribution list!");
-			} else {
-				debugInfo("  - Random drops distributution: " + dropsFromRandomDistribution);
-			}
-		}
+        if (spells == null || spells.isEmpty()) {
+            debugInfo(spellTriggerType + parentRoot.getVal() + " - NO SPELLS DEFINED");
+            return;
+        }
 
-		Key dropsRoot = new Key(entityRoot.end(Config.DROPS_ROOT));
+        boolean somethingWasCast = false;
 
-		ConfigurationSection dropsConfigurationSection = getConfig().getConfigurationSection(dropsRoot.getVal());
-		if (dropsConfigurationSection == null) {
-			debugInfo("damage-entity: " + entityRoot.getVal() + " - DROPS SECTION NOT DEFINED");
-			return;
-		}
+        for (String spellKey : spells) {
 
-		Set<String> drops = dropsConfigurationSection.getKeys(false);
+            boolean somethingWasCastTemp = spell(location, spellsRoot, spellKey, parentRoot,
+                    spellsFromRandomDistribution, player, entitySpellChance);
+            if (somethingWasCastTemp && !somethingWasCast) {
+                somethingWasCast = true;
+            }
+        }
 
-		if (drops == null || drops.isEmpty()) {
-			debugInfo("damage-entity: " + entityRoot.getVal() + " - NO DROPS DEFINED");
-			return;
-		}
+        if (!somethingWasCast) {
+            debugInfo(spellTriggerType + "  - no spell");
+            return;
+        }
+    }
 
-		boolean somethingDropped = false;
+    private void processDropsForEntity(Player player, Location location, Key entityRoot, boolean isKill) {
+        double materialDropChance = getConfig().getDouble(entityRoot.end(Config.DROP_CHANCE),
+                dropsyPlugin.getDropChance());
 
-		for (String dropKey : drops) {
+        List<String> dropsFromRandomDistribution = null;
 
-			boolean somethingDroppedTemp = drop(location, dropsRoot, dropKey, entityRoot,
-					dropsFromRandomDistribution, player, materialDropChance);
-			
-			if(somethingDropped){
-				Key dropRoot = new Key(dropsRoot.end(dropKey));
-				processSpellsSection(player, location, dropRoot, isKill ? SPELL_TRIGGER_TYPE_KILL_DROP : SPELL_TRIGGER_TYPE_ATTACK_DROP);
-			}
-			
-			if (somethingDroppedTemp && !somethingDropped) {
-				somethingDropped = true;
-			}
-		}
+        if (getConfig().contains(entityRoot.end(Config.DROPS_DISTRIBUTION), true)) {
+            List<String> dropsDistribution = getConfig().getStringList(entityRoot.end(Config.DROPS_DISTRIBUTION));
+            dropsFromRandomDistribution = DropsyPlugin.getRandomCsvStringListFromDistribution(dropsDistribution);
 
-		if (!somethingDropped) {
-			debugInfo("  - nothing dropped");
-			return;
-		}
+            if (dropsFromRandomDistribution == null || dropsFromRandomDistribution.isEmpty()) {
+                warning("damage-entity: " + entityRoot.getVal()
+                        + " - Unexpected issue getting the random drops distribution list!");
+            } else {
+                debugInfo("  - Random drops distributution: " + dropsFromRandomDistribution);
+            }
+        }
 
-		if (dropsyPlugin.getDropSound() != null) {
-			location.getWorld().playSound(location, dropsyPlugin.getDropSound(), 1f, 1f);
-		}
-	}
+        Key dropsRoot = new Key(entityRoot.end(Config.DROPS_ROOT));
+
+        ConfigurationSection dropsConfigurationSection = getConfig().getConfigurationSection(dropsRoot.getVal());
+        if (dropsConfigurationSection == null) {
+            debugInfo("damage-entity: " + entityRoot.getVal() + " - DROPS SECTION NOT DEFINED");
+            return;
+        }
+
+        Set<String> drops = dropsConfigurationSection.getKeys(false);
+
+        if (drops == null || drops.isEmpty()) {
+            debugInfo("damage-entity: " + entityRoot.getVal() + " - NO DROPS DEFINED");
+            return;
+        }
+
+        boolean somethingDropped = false;
+
+        for (String dropKey : drops) {
+
+            boolean somethingDroppedTemp = drop(location, dropsRoot, dropKey, entityRoot,
+                    dropsFromRandomDistribution, player, materialDropChance);
+
+            if (somethingDropped) {
+                Key dropRoot = new Key(dropsRoot.end(dropKey));
+                processSpellsSection(player, location, dropRoot, isKill ? SPELL_TRIGGER_TYPE_KILL_DROP : SPELL_TRIGGER_TYPE_ATTACK_DROP);
+            }
+
+            if (somethingDroppedTemp && !somethingDropped) {
+                somethingDropped = true;
+            }
+        }
+
+        if (!somethingDropped) {
+            debugInfo("  - nothing dropped");
+            return;
+        }
+
+        if (dropsyPlugin.getDropSound() != null) {
+            location.getWorld().playSound(location, dropsyPlugin.getDropSound(), 1f, 1f);
+        }
+    }
 }

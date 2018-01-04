@@ -13,7 +13,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 
-import com.blocktyper.v1_2_3.helpers.Key;
+import com.blocktyper.v1_2_6.helpers.Key;
 
 public class DropsyBlockListener extends DropsyListenerBase {
 
@@ -197,7 +197,7 @@ public class DropsyBlockListener extends DropsyListenerBase {
 		for (String spellKey : drops) {
 
 			boolean somethingWasCastTemp = spell(block != null ? block.getLocation() : event.getPlayer().getLocation(), spellsRoot, spellKey, parent,
-					spellsFromRandomDistribution, event.getPlayer(), materialSpellChance, null);
+					spellsFromRandomDistribution, event.getPlayer(), materialSpellChance);
 			if (somethingWasCastTemp && !somethingWasCast) {
 				somethingWasCast = true;
 			}

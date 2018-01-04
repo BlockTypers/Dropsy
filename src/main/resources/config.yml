@@ -39,10 +39,10 @@ regions:
     name: Zone 2
     priority: 2
     bounds: 
-      highest-x: 200
-      highest-z: 200
-      lowest-x: -200
-      lowest-z: -200
+      highest-x: 2000
+      highest-z: 2000
+      lowest-x: -2000
+      lowest-z: -2000
 
 
 first-blocks: 
@@ -74,10 +74,10 @@ first-blocks:
       COAL: 
         enabled: true
         name: Normal Boring Coal
-      molten-shovel: 
+      molten-shovel:
         recipe: molten-shovel
         enabled: true
-      fossil-flame: 
+      fossil-flame:
         material: COAL
         enabled: true
         name: Fossil Flame
@@ -86,7 +86,7 @@ first-blocks:
           - you get a strange feeling whenever you look directly at it
         enchantments:
           KNOCKBACK:
-            power: 2
+            level: 2
             
 second-blocks: 
   SAND: 
@@ -100,7 +100,6 @@ second-blocks:
       - EMERALD(5)
     drops: 
       EMERALD:
-         
         enabled: true
         exp-range: 1~5
       
@@ -281,7 +280,7 @@ mobs-kill:
         spell-chance-percent: 5
         source:
           en: Get pumped
-          en: Pumpe es auf
+          de: Pumpe es auf
         variables: 
           LEVEL: 1
           SECONDS: 10
@@ -323,29 +322,63 @@ mobs-kill:
         required-item: head-hunter
         
         
-first-mobs-damage: 
-  SKELETON: 
+second-mobs-damage:
+  SKELETON:
+    name: Spaarkimus
     enabled: true
     amount-range: 1~3
     exp: 1
-    spell-chance-percent: 1
+    spell-chance-percent: 100
     spells:
       damage:
+        enabled: true
         command-sequence: damage
         source:
           en: Death's Breath
-          en: Der Atmen des Tods
+          de: Der Atmen des Tods
         variables: 
           LEVEL: 2
           SECONDS: 4
-          TARGET: &PLAYER
+          TARGET: PLAYER
     drops-distribution:
       - NOTHING(50)
-      - BONE(50)
+      - spaarkimus-prime(50)
     drops:
       BONE: 
         enabled: true
         required-item: head-hunter
+      spaarkimus-prime:
+        material: ARROW
+        enabled: true
+        name: Spaarkimus Prime
+        lore:
+        - an arrow so sharp that
+        - it hurts to even look at it
+        enchantments:
+          ARROW_DAMAGE:
+            level: 1
+
+second-mobs-kill:
+  SKELETON:
+    name: Spaarkimus
+    enabled: true
+    amount-range: 1~3
+    exp: 10
+    drops-distribution:
+      - spaarkimus-omega(100)
+    drops:
+      spaarkimus-omega:
+        material: ARROW
+        enabled: true
+        name: Spaarkimus Omega
+        lore:
+        - an arrow so sharp that it will
+        - literally knock your socks off
+        enchantments:
+          ARROW_KNOCKBACK:
+            level: 2
+          ARROW_DAMAGE:
+            level: 2
         
         
 recipes: 
@@ -354,33 +387,30 @@ recipes:
   - head-hunter
   
 command-sequences:
-  damage-player: 
-    commands:
-      - effect 10 &TARGET &LEVEL &SECONDS
   damage: 
     commands:
-      - effect 10 &TARGET &LEVEL &SECONDS
+      - effect &TARGET 20 &LEVEL &SECONDS
     messages:
       en:
-        - §4&SOURCE -> Damaged (&LEVEL) - &SECONDS sec
+        - §4SOURCE -> Damaged (&LEVEL) - &SECONDS sec
       de: 
-        - §4&SOURCE -> Beschädigt (&LEVEL) - &SECONDS sec
+        - §4SOURCE -> Beschädigt (&LEVEL) - &SECONDS sec
   haste:
     commands:
-      - effect 3 &PLAYER &LEVEL &SECONDS
+      - effect &TARGET 3 &LEVEL &SECONDS
     messages:
       en:
-        - §2&SOURCE -> Haste (&LEVEL) - &SECONDS sec
+        - §2SOURCE -> Haste (&LEVEL) - &SECONDS sec
       de: 
-        - §2&SOURCE -> Eile (&LEVEL) - &SECONDS sec
+        - §2SOURCE -> Eile (&LEVEL) - &SECONDS sec
   fatigue:
     commands:
-      - effect 4 &PLAYER LEVEL &SECONDS
+      - effect &TARGET 4 &LEVEL &SECONDS
     messages:
       en:
-        - §e&SOURCE -> Fatigue (&LEVEL) -  &SECONDS sec
+        - §eSOURCE -> Fatigue (&LEVEL) -  &SECONDS sec
       de: 
-        - §e&SOURCE -> Müdigkeit (&LEVEL) -  &SECONDS sec
+        - §eSOURCE -> Müdigkeit (&LEVEL) -  &SECONDS sec
       
 
   
